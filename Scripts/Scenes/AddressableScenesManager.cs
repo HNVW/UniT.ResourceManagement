@@ -23,7 +23,7 @@ namespace UniT.ResourceManagement
 
         private readonly ILogger logger;
 
-        private readonly Dictionary<string, SceneInstance> loadedScenes = new Dictionary<string, SceneInstance>();
+        private readonly Dictionary<string, SceneInstance> loadedScenes = new();
 
         [Preserve]
         public AddressableScenesManager(ILoggerManager loggerManager)

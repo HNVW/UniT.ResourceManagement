@@ -24,7 +24,7 @@ namespace UniT.ResourceManagement
 
         private readonly ILogger logger;
 
-        private readonly Dictionary<string, object> cache = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> cache = new();
 
         [Preserve]
         public ExternalAssetsManager(ILoggerManager loggerManager)

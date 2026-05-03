@@ -4,6 +4,7 @@ namespace UniT.ResourceManagement
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using UniT.Extensions;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -83,6 +84,7 @@ namespace UniT.ResourceManagement
 
         #region Default Implementation
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async UniTask<(bool IsSucceeded, T Asset)> TryLoadAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object
         {
             try
@@ -95,10 +97,13 @@ namespace UniT.ResourceManagement
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadComponentAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) => this.LoadAsync<GameObject>(key, progress, cancellationToken).ContinueWith(gameObject => gameObject.GetComponentOrThrow<T>());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<IEnumerable<T>> LoadAllComponentsAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) => this.LoadAllAsync<GameObject>(key, progress, cancellationToken).ContinueWith(GetAllComponents<T>);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<(bool IsSucceeded, T Component)> TryLoadComponentAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default)
         {
             return this.TryLoadAsync<GameObject>(key, progress, cancellationToken)
@@ -113,16 +118,22 @@ namespace UniT.ResourceManagement
 
         #region Implicit Key
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.LoadAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<IEnumerable<T>> LoadAllAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.LoadAllAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<(bool IsSucceeded, T Asset)> TryLoadAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.TryLoadAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadComponentAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) => this.LoadComponentAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<IEnumerable<T>> LoadAllComponentsAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) => this.LoadAllComponentsAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<(bool IsSucceeded, T Component)> TryLoadComponentAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) => this.TryLoadComponentAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
         #endregion
@@ -134,6 +145,7 @@ namespace UniT.ResourceManagement
 
         #region Default Implementation
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator TryLoadAsync<T>(object key, Action<(bool IsSucceeded, T Asset)> callback, IProgress<float>? progress = null) where T : Object
         {
             return this.LoadAsync<T>(
@@ -143,10 +155,13 @@ namespace UniT.ResourceManagement
             ).Catch(() => callback((false, null!)));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadComponentAsync<T>(object key, Action<T> callback, IProgress<float>? progress = null) => this.LoadAsync<GameObject>(key, gameObject => callback(gameObject.GetComponentOrThrow<T>()), progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadAllComponentsAsync<T>(object key, Action<IEnumerable<T>> callback, IProgress<float>? progress = null) => this.LoadAllAsync<GameObject>(key, gameObjects => callback(GetAllComponents<T>(gameObjects)), progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator TryLoadComponentAsync<T>(object key, Action<(bool IsSucceeded, T Component)> callback, IProgress<float>? progress = null)
         {
             return this.TryLoadAsync<GameObject>(
@@ -164,16 +179,22 @@ namespace UniT.ResourceManagement
 
         #region Implicit Key
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadAsync<T>(Action<T> callback, IProgress<float>? progress = null) where T : Object => this.LoadAsync(typeof(T).GetKey(), callback, progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadAllAsync<T>(Action<IEnumerable<T>> callback, IProgress<float>? progress = null) where T : Object => this.LoadAllAsync(typeof(T).GetKey(), callback, progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator TryLoadAsync<T>(Action<(bool IsSucceeded, T Asset)> callback, IProgress<float>? progress = null) where T : Object => this.TryLoadAsync(typeof(T).GetKey(), callback, progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadComponentAsync<T>(Action<T> callback, IProgress<float>? progress = null) => this.LoadComponentAsync(typeof(T).GetKey(), callback, progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadAllComponentsAsync<T>(Action<IEnumerable<T>> callback, IProgress<float>? progress = null) => this.LoadAllComponentsAsync(typeof(T).GetKey(), callback, progress);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator TryLoadComponentAsync<T>(Action<(bool IsSucceeded, T Component)> callback, IProgress<float>? progress = null) => this.TryLoadComponentAsync(typeof(T).GetKey(), callback, progress);
 
         #endregion
@@ -186,8 +207,10 @@ namespace UniT.ResourceManagement
 
         public void UnloadAll(object key);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unload<T>() => this.Unload(typeof(T).GetKey());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static IEnumerable<T> GetAllComponents<T>(IEnumerable<GameObject> gameObjects) => gameObjects.Select(gameObject => gameObject.GetComponent<T>()).OfType<T>();
     }
 }

@@ -26,8 +26,8 @@ namespace UniT.ResourceManagement
         private readonly string  keyPrefix;
         private readonly ILogger logger;
 
-        private readonly Dictionary<object, Object>                      cacheSingle   = new Dictionary<object, Object>();
-        private readonly Dictionary<object, IReadOnlyCollection<Object>> cacheMultiple = new Dictionary<object, IReadOnlyCollection<Object>>();
+        private readonly Dictionary<object, Object>                      cacheSingle   = new();
+        private readonly Dictionary<object, IReadOnlyCollection<Object>> cacheMultiple = new();
 
         [Preserve]
         public ResourceAssetsManager(ILoggerManager loggerManager, string? scope = null)
@@ -48,7 +48,7 @@ namespace UniT.ResourceManagement
         #if !UNITY_WEBGL
         T IAssetsManager.Load<T>(object key)
         {
-            return (T)this.cacheSingle.GetOrAdd(key, state =>
+            return (T)this.cacheSingle.GetOrAdd(key, static state =>
             {
                 var asset = Resources.Load<T>(state.@this.GetScopedKey(state.key))
                     ?? throw new ArgumentOutOfRangeException($"{state.key} not found in resources");
@@ -61,7 +61,7 @@ namespace UniT.ResourceManagement
 
         private IEnumerable<T> LoadAll<T>(object key) where T : Object
         {
-            return this.cacheMultiple.GetOrAdd(key, state =>
+            return this.cacheMultiple.GetOrAdd(key, static state =>
             {
                 var assets = Resources.LoadAll<T>(state.@this.GetScopedKey(state.key));
                 state.@this.logger.Debug($"Loaded {state.key}");
@@ -77,7 +77,7 @@ namespace UniT.ResourceManagement
         #if UNIT_UNITASK
         async UniTask<T> IAssetsManager.LoadAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            return (T)await this.cacheSingle.GetOrAddAsync(key, async state =>
+            return (T)await this.cacheSingle.GetOrAddAsync(key, static async state =>
             {
                 var asset = await Resources.LoadAsync<T>(state.@this.GetScopedKey(state.key)).ToUniTask(progress: state.progress, cancellationToken: state.cancellationToken)
                     ?? throw new ArgumentOutOfRangeException($"{state.key} not found in resources");
@@ -149,7 +149,7 @@ namespace UniT.ResourceManagement
         private void Dispose()
         {
             this.cacheSingle.Clear(Resources.UnloadAsset);
-            this.cacheMultiple.Clear(assets => assets.ForEach(Resources.UnloadAsset));
+            this.cacheMultiple.Clear(static assets => assets.ForEach(Resources.UnloadAsset));
         }
 
         void IDisposable.Dispose()

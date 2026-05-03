@@ -26,8 +26,8 @@ namespace UniT.ResourceManagement
         private readonly string  keyPrefix;
         private readonly ILogger logger;
 
-        private readonly Dictionary<object, Object>                      cache  = new Dictionary<object, Object>();
-        private readonly Dictionary<object, IReadOnlyCollection<string>> keyMap = new Dictionary<object, IReadOnlyCollection<string>>();
+        private readonly Dictionary<object, Object>                      cache  = new();
+        private readonly Dictionary<object, IReadOnlyCollection<string>> keyMap = new();
 
         [Preserve]
         public AddressableAssetsManager(ILoggerManager loggerManager, string? scope = null)
@@ -46,7 +46,7 @@ namespace UniT.ResourceManagement
 
         IEnumerable<T> IAssetsManager.LoadAll<T>(object key)
         {
-            return this.keyMap.GetOrAdd(key, state =>
+            return this.keyMap.GetOrAdd(key, static state =>
             {
                 var resourceLocations = state.@this.GetAllResourceLocationsInternal<T>(state.key).WaitForResultOrThrow();
                 var keys              = state.@this.GetAllKeys(resourceLocations);
@@ -57,7 +57,7 @@ namespace UniT.ResourceManagement
 
         private T Load<T>(object key) where T : Object
         {
-            return (T)this.cache.GetOrAdd(key, state =>
+            return (T)this.cache.GetOrAdd(key, static state =>
             {
                 var asset = state.@this.LoadInternal<T>(state.key).WaitForResultOrThrow();
                 state.@this.logger.Debug($"Loaded {state.key}");
@@ -75,7 +75,7 @@ namespace UniT.ResourceManagement
 
         async UniTask<IEnumerable<T>> IAssetsManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            var keys = await this.keyMap.GetOrAddAsync(key, async state =>
+            var keys = await this.keyMap.GetOrAddAsync(key, static async state =>
             {
                 var resourceLocations = await state.@this.GetAllResourceLocationsInternal<T>(state.key).ToUniTask(cancellationToken: state.cancellationToken);
                 var keys              = state.@this.GetAllKeys(resourceLocations);
@@ -99,7 +99,7 @@ namespace UniT.ResourceManagement
 
         private async UniTask<T> LoadAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken) where T : Object
         {
-            return (T)await this.cache.GetOrAddAsync(key, async state =>
+            return (T)await this.cache.GetOrAddAsync(key, static async state =>
             {
                 var asset = await state.@this.LoadInternal<T>(state.key).ToUniTask(state.progress, state.cancellationToken);
                 state.@this.logger.Debug($"Loaded {state.key}");
@@ -227,7 +227,7 @@ namespace UniT.ResourceManagement
 
         private IReadOnlyCollection<string> GetAllKeys(IList<IResourceLocation> resourceLocations)
         {
-            return resourceLocations.Select((resourceLocation, keyPrefix) => resourceLocation.PrimaryKey.TrimStart(keyPrefix), this.keyPrefix).ToArray();
+            return resourceLocations.Select(static (resourceLocation, keyPrefix) => resourceLocation.PrimaryKey.TrimStart(keyPrefix), this.keyPrefix).ToArray();
         }
 
         #endregion
