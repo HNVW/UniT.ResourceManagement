@@ -23,12 +23,15 @@ namespace UniT.ResourceManagement
         #region Sync
 
         #if !UNITY_WEBGL
+        public bool Contains<T>(object key) where T : Object;
+
         public T Load<T>(object key) where T : Object;
 
         public IEnumerable<T> LoadAll<T>(object key) where T : Object;
 
         #region Default Implementation
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryLoad<T>(object key, [MaybeNullWhen(false)] out T asset) where T : Object
         {
             try
@@ -43,10 +46,13 @@ namespace UniT.ResourceManagement
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T LoadComponent<T>(object key) => this.Load<GameObject>(key).GetComponentOrThrow<T>();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> LoadAllComponents<T>(object key) => GetAllComponents<T>(this.LoadAll<GameObject>(key));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryLoadComponent<T>(object key, [MaybeNullWhen(false)] out T component)
         {
             component = default;
@@ -57,16 +63,25 @@ namespace UniT.ResourceManagement
 
         #region Implicit Key
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Contains<T>() where T : Object => this.Contains<T>(typeof(T).GetKey());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Load<T>() where T : Object => this.Load<T>(typeof(T).GetKey());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> LoadAll<T>() where T : Object => this.LoadAll<T>(typeof(T).GetKey());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryLoad<T>([MaybeNullWhen(false)] out T asset) where T : Object => this.TryLoad(typeof(T).GetKey(), out asset);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T LoadComponent<T>() => this.LoadComponent<T>(typeof(T).GetKey());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<T> LoadAllComponents<T>() => this.LoadAllComponents<T>(typeof(T).GetKey());
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryLoadComponent<T>([MaybeNullWhen(false)] out T component) => this.TryLoadComponent(typeof(T).GetKey(), out component);
 
         #endregion
@@ -78,6 +93,8 @@ namespace UniT.ResourceManagement
         #region Async
 
         #if UNIT_UNITASK
+        public UniTask<bool> ContainsAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object;
+
         public UniTask<T> LoadAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object;
 
         public UniTask<IEnumerable<T>> LoadAllAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object;
@@ -119,6 +136,9 @@ namespace UniT.ResourceManagement
         #region Implicit Key
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public UniTask<bool> ContainsAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.ContainsAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.LoadAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -139,6 +159,8 @@ namespace UniT.ResourceManagement
         #endregion
 
         #else
+        public IEnumerator ContainsAsync<T>(object key, Action<bool> callback, IProgress<float>? progress = null) where T : Object;
+
         public IEnumerator LoadAsync<T>(object key, Action<T> callback, IProgress<float>? progress = null) where T : Object;
 
         public IEnumerator LoadAllAsync<T>(object key, Action<IEnumerable<T>> callback, IProgress<float>? progress = null) where T : Object;
@@ -178,6 +200,9 @@ namespace UniT.ResourceManagement
         #endregion
 
         #region Implicit Key
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public IEnumerator ContainsAsync<T>(Action<bool> callback, IProgress<float>? progress = null) where T : Object => this.ContainsAsync<T>(typeof(T).GetKey(), callback, progress);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerator LoadAsync<T>(Action<T> callback, IProgress<float>? progress = null) where T : Object => this.LoadAsync(typeof(T).GetKey(), callback, progress);

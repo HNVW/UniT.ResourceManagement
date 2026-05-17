@@ -3,6 +3,8 @@ namespace UniT.ResourceManagement
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
     using UniT.Extensions;
     using UniT.Logging;
     using UnityEngine;
@@ -14,9 +16,6 @@ namespace UniT.ResourceManagement
     using Cysharp.Threading.Tasks;
     #else
     using System.Collections;
-    #endif
-    #if !UNITY_WEBGL
-    using System.Linq;
     #endif
 
     public sealed class ResourceAssetsManager : IAssetsManager
@@ -39,6 +38,7 @@ namespace UniT.ResourceManagement
 
         #endregion
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string GetScopedKey(object key) => key is string
             ? $"{this.keyPrefix}{key}"
             : throw new NotSupportedException("Resources only supports loading assets from string paths");
@@ -46,18 +46,29 @@ namespace UniT.ResourceManagement
         #region Sync
 
         #if !UNITY_WEBGL
+        bool IAssetsManager.Contains<T>(object key)
+        {
+            if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key)) return true;
+            this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` or `LoadAllAsync` directly.");
+            var asset = Resources.Load<T>(this.GetScopedKey(key));
+            if (!asset) return false;
+            Unload(asset);
+            return true;
+        }
+
         T IAssetsManager.Load<T>(object key)
         {
             return (T)this.cacheSingle.GetOrAdd(key, static state =>
             {
-                var asset = Resources.Load<T>(state.@this.GetScopedKey(state.key))
-                    ?? throw new ArgumentOutOfRangeException($"{state.key} not found in resources");
+                var asset = Resources.Load<T>(state.@this.GetScopedKey(state.key));
+                if (!asset) throw new ArgumentOutOfRangeException(nameof(state.key), state.key, $"{state.key} not found in resources");
                 state.@this.logger.Debug($"Loaded {state.key}");
                 return asset;
             }, (@this: this, key));
         }
 
         IEnumerable<T> IAssetsManager.LoadAll<T>(object key) => this.LoadAll<T>(key);
+        #endif
 
         private IEnumerable<T> LoadAll<T>(object key) where T : Object
         {
@@ -68,19 +79,28 @@ namespace UniT.ResourceManagement
                 return assets;
             }, (@this: this, key)).Cast<T>();
         }
-        #endif
 
         #endregion
 
         #region Async
 
         #if UNIT_UNITASK
+        async UniTask<bool> IAssetsManager.ContainsAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key)) return true;
+            this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` or `LoadAllAsync` directly.");
+            var asset = await Resources.LoadAsync<T>(this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
+            if (!asset) return false;
+            Unload(asset);
+            return true;
+        }
+
         async UniTask<T> IAssetsManager.LoadAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             return (T)await this.cacheSingle.GetOrAddAsync(key, static async state =>
             {
-                var asset = await Resources.LoadAsync<T>(state.@this.GetScopedKey(state.key)).ToUniTask(progress: state.progress, cancellationToken: state.cancellationToken)
-                    ?? throw new ArgumentOutOfRangeException($"{state.key} not found in resources");
+                var asset = await Resources.LoadAsync<T>(state.@this.GetScopedKey(state.key)).ToUniTask(progress: state.progress, cancellationToken: state.cancellationToken);
+                if (!asset) throw new ArgumentOutOfRangeException(nameof(state.key), state.key, $"{state.key} not found in resources");
                 state.@this.logger.Debug($"Loaded {state.key}");
                 return asset;
             }, (@this: this, key, progress, cancellationToken));
@@ -88,33 +108,47 @@ namespace UniT.ResourceManagement
 
         UniTask<IEnumerable<T>> IAssetsManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            #if !UNITY_WEBGL
-            this.logger.Warning("Unity does not support loading all from resources asynchronously");
+            this.logger.Warning("Resources does not support loading all asynchronously");
             return UniTask.FromResult(this.LoadAll<T>(key));
-            #else
-            throw new NotSupportedException("Unity does not support loading all from resources asynchronously");
-            #endif
         }
         #else
+        IEnumerator IAssetsManager.ContainsAsync<T>(object key, Action<bool> callback, IProgress<float>? progress)
+        {
+            if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key))
+            {
+                callback(true);
+                yield break;
+            }
+            this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` or `LoadAllAsync` directly.");
+            yield return Resources.LoadAsync<T>(this.GetScopedKey(key)).ToCoroutine(operation =>
+            {
+                if (!operation.asset)
+                {
+                    callback(false);
+                    return;
+                }
+                Unload(operation.asset);
+                callback(true);
+            }, progress);
+        }
+
         IEnumerator IAssetsManager.LoadAsync<T>(object key, Action<T> callback, IProgress<float>? progress)
         {
             return this.cacheSingle.GetOrAddAsync(
                 key,
-                callback =>
+                callback => Resources.LoadAsync<T>(this.GetScopedKey(key)).ToCoroutine(operation =>
                 {
-                    var operation = Resources.LoadAsync<T>(this.GetScopedKey(key));
-                    return operation.ToCoroutine(
-                        () => callback(operation.asset ?? throw new ArgumentOutOfRangeException($"{key} not found in resources")),
-                        progress
-                    );
-                },
+                    if (!operation.asset) throw new ArgumentOutOfRangeException(nameof(key), key, $"{key} not found in resources");
+                    this.logger.Debug($"Loaded {key}");
+                    callback(operation.asset);
+                }, progress),
                 asset => callback((T)asset)
             );
         }
 
         IEnumerator IAssetsManager.LoadAllAsync<T>(object key, Action<IEnumerable<T>> callback, IProgress<float>? progress)
         {
-            this.logger.Warning("Unity does not support loading all from resources asynchronously");
+            this.logger.Warning("Resources does not support loading all asynchronously");
             callback(this.LoadAll<T>(key));
             yield break;
         }
@@ -131,7 +165,7 @@ namespace UniT.ResourceManagement
                 this.logger.Warning($"Trying to unload {key} that was not loaded");
                 return;
             }
-            Resources.UnloadAsset(asset);
+            Unload(asset);
             this.logger.Debug($"Unloaded {key}");
         }
 
@@ -142,14 +176,15 @@ namespace UniT.ResourceManagement
                 this.logger.Warning($"Trying to unload all {key} that was not loaded");
                 return;
             }
-            assets.ForEach(Resources.UnloadAsset);
+            assets.ForEach(Unload);
             this.logger.Debug($"Unloaded {key}");
         }
 
         private void Dispose()
         {
-            this.cacheSingle.Clear(Resources.UnloadAsset);
-            this.cacheMultiple.Clear(static assets => assets.ForEach(Resources.UnloadAsset));
+            this.cacheSingle.Clear(Unload);
+            this.cacheMultiple.Clear(static assets => assets.ForEach(Unload));
+            Resources.UnloadUnusedAssets();
         }
 
         void IDisposable.Dispose()
@@ -162,6 +197,12 @@ namespace UniT.ResourceManagement
         {
             this.Dispose();
             this.logger.Debug("Finalized");
+        }
+
+        private static void Unload(Object asset)
+        {
+            if (asset is GameObject) return;
+            Resources.UnloadAsset(asset);
         }
 
         #endregion
