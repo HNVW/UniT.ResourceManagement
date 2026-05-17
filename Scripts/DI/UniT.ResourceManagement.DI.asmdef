@@ -1,0 +1,33 @@
+{
+  "name": "UniT.ResourceManagement.DI",
+  "rootNamespace": "UniT.ResourceManagement.DI",
+  "references": [
+    "UniT.Logging.DI",
+    "UniT.ResourceManagement",
+    "UniT.DI",
+    "Zenject",
+    "VContainer"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.frostbun.unit.di",
+      "expression": "",
+      "define": "UNIT_DI"
+    },
+    {
+      "name": "com.svermeulen.extenject",
+      "expression": "",
+      "define": "UNIT_ZENJECT"
+    },
+    {
+      "name": "jp.hadashikick.vcontainer",
+      "expression": "",
+      "define": "UNIT_VCONTAINER"
+    },
+    {
+      "name": "com.unity.addressables",
+      "expression": "",
+      "define": "UNIT_ADDRESSABLES"
+    }
+  ]
+}
