@@ -98,13 +98,11 @@ namespace UniT.ResourceManagement.Unity
 
         async UniTask IExternalAssetManager.DownloadFileAsync(string url, string savePath, bool cache, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (!cache || !File.Exists(savePath))
-            {
-                this.logger.Debug($"Saving {url} to {savePath}");
-                using var request = new UnityWebRequest(url);
-                request.downloadHandler = new DownloadHandlerFile(savePath);
-                await this.DownloadAsync(request, progress, cancellationToken);
-            }
+            if (cache && File.Exists(savePath)) return;
+            this.logger.Debug($"Saving {url} to {savePath}");
+            using var request = new UnityWebRequest(url);
+            request.downloadHandler = new DownloadHandlerFile(savePath);
+            await this.DownloadAsync(request, progress, cancellationToken);
         }
 
         private async UniTask DownloadAsync(UnityWebRequest request, IProgress<float>? progress, CancellationToken cancellationToken)
