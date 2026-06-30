@@ -14,7 +14,7 @@ namespace UniT.ResourceManagement.Unity
     using ILogger = UniT.Logging.ILogger;
     using Object = UnityEngine.Object;
 
-    public sealed class UnityExternalAssetManager : IExternalAssetManager
+    public sealed class UnityExternalAssetManager : IExternalAssetManager, IDisposable
     {
         #region Constructor
 

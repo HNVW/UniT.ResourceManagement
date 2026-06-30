@@ -9,9 +9,9 @@ namespace UniT.ResourceManagement
     using UniT.Extensions;
     using Object = UnityEngine.Object;
 
-    public interface IAssetManager : IDisposable
+    public interface IAssetManager
     {
-        public UniTask<bool> ContainsAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object;
+        public UniTask<bool> ContainsAsync(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 
         public UniTask<T> LoadAsync<T>(object key, IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object;
 
@@ -24,7 +24,7 @@ namespace UniT.ResourceManagement
         #region Implicit Key
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public UniTask<bool> ContainsAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.ContainsAsync<T>(typeof(T).GetKey(), progress, cancellationToken);
+        public UniTask<bool> ContainsAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.ContainsAsync(typeof(T).GetKey(), progress, cancellationToken);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UniTask<T> LoadAsync<T>(IProgress<float>? progress = null, CancellationToken cancellationToken = default) where T : Object => this.LoadAsync<T>(typeof(T).GetKey(), progress, cancellationToken);

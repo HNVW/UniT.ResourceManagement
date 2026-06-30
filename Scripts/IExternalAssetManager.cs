@@ -6,7 +6,7 @@ namespace UniT.ResourceManagement
     using Cysharp.Threading.Tasks;
     using UnityEngine;
 
-    public interface IExternalAssetManager : IDisposable
+    public interface IExternalAssetManager
     {
         public UniTask<string> DownloadTextAsync(string url, bool cache = true, IProgress<float>? progress = null, CancellationToken cancellationToken = default);
 

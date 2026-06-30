@@ -13,7 +13,7 @@ namespace UniT.ResourceManagement.Resources
     using ILogger = UniT.Logging.ILogger;
     using Object = UnityEngine.Object;
 
-    public sealed class ResourcesAssetManager : IAssetManager
+    public sealed class ResourcesAssetManager : IAssetManager, IDisposable
     {
         #region Constructor
 
@@ -35,11 +35,11 @@ namespace UniT.ResourceManagement.Resources
 
         #region Load
 
-        async UniTask<bool> IAssetManager.ContainsAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        async UniTask<bool> IAssetManager.ContainsAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key)) return true;
             this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` or `LoadAllAsync` directly.");
-            var asset = await Resources.LoadAsync<T>(this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
+            var asset = await Resources.LoadAsync<Object>(this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
             if (!asset) return false;
             Unload(asset);
             return true;
@@ -51,7 +51,7 @@ namespace UniT.ResourceManagement.Resources
             {
                 var (@this, key, progress, cancellationToken) = state;
                 var asset = await Resources.LoadAsync<T>(@this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
-                if (!asset) throw new ArgumentOutOfRangeException(nameof(key), key, $"{key} not found in resources");
+                if (!asset) throw new KeyNotFoundException($"{key} not found in Resources");
                 @this.logger.Debug($"Loaded {key}");
                 return asset;
             }, (@this: this, key, progress, cancellationToken));
