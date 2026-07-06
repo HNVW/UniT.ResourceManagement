@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Unity.VContainer",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Unity",
     "VContainer"

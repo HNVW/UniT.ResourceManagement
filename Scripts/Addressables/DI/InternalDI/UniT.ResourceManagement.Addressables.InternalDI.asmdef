@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Addressables.InternalDI",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Addressables",
     "UniT.DI.InternalDI"

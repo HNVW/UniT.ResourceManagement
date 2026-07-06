@@ -1,5 +1,6 @@
 {
   "name": "UniT.ResourceManagement.Unity",
+  "overrideReferences": true,
   "references": [
     "UniT.ResourceManagement",
     "UniT.Extensions",

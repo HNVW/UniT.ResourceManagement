@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Addressables.VContainer",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Addressables",
     "VContainer"

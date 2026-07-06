@@ -1,5 +1,6 @@
 {
   "name": "UniT.ResourceManagement.Addressables",
+  "overrideReferences": true,
   "references": [
     "UniT.ResourceManagement",
     "UniT.Extensions",

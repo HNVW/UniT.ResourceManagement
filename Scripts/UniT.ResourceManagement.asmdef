@@ -1,5 +1,6 @@
 {
   "name": "UniT.ResourceManagement",
+  "overrideReferences": true,
   "references": [
     "UniT.Extensions",
     "UniTask"

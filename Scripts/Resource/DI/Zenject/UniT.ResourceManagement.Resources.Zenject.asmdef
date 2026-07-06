@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Resources.Zenject",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Resources",
     "Zenject"

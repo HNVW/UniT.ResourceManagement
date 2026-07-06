@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Addressables.Zenject",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Addressables",
     "Zenject"

@@ -1,5 +1,7 @@
 {
   "name": "UniT.ResourceManagement.Unity.InternalDI",
+  "overrideReferences": true,
+  "noEngineReferences": true,
   "references": [
     "UniT.ResourceManagement.Unity",
     "UniT.DI.InternalDI"
