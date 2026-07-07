@@ -10,24 +10,24 @@ namespace UniT.ResourceManagement.Resources
     using UniT.Logging;
     using UnityEngine;
     using UnityEngine.Scripting;
-    using ILogger = UniT.Logging.ILogger;
+    using ILogger = Logging.ILogger;
     using Object = UnityEngine.Object;
 
     public sealed class ResourcesAssetManager : IAssetManager, IDisposable
     {
         #region Constructor
 
-        private readonly string  keyPrefix;
+        private readonly string keyPrefix;
         private readonly ILogger logger;
 
-        private readonly Dictionary<object, Object>                      cacheSingle   = new();
+        private readonly Dictionary<object, Object> cacheSingle = new();
         private readonly Dictionary<object, IReadOnlyCollection<Object>> cacheMultiple = new();
 
         [Preserve]
         public ResourcesAssetManager(ILoggerManager loggerManager, string? scope = null)
         {
             this.keyPrefix = scope.IsNullOrWhiteSpace() ? string.Empty : $"{scope}/";
-            this.logger    = loggerManager.GetLogger(this);
+            this.logger = loggerManager.GetLogger(this);
             this.logger.Debug("Constructed");
         }
 

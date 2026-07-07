@@ -10,7 +10,7 @@ namespace UniT.ResourceManagement.Resources
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.Scripting;
-    using ILogger = UniT.Logging.ILogger;
+    using ILogger = Logging.ILogger;
 
     public sealed class ResourcesSceneManager : ISceneManager
     {

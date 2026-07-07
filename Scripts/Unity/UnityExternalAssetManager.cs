@@ -11,7 +11,7 @@ namespace UniT.ResourceManagement.Unity
     using UnityEngine;
     using UnityEngine.Networking;
     using UnityEngine.Scripting;
-    using ILogger = UniT.Logging.ILogger;
+    using ILogger = Logging.ILogger;
     using Object = UnityEngine.Object;
 
     public sealed class UnityExternalAssetManager : IExternalAssetManager, IDisposable
@@ -105,7 +105,7 @@ namespace UniT.ResourceManagement.Unity
 
         void IDisposable.Dispose()
         {
-            this.cache.Clear(obj =>
+            this.cache.Clear(static obj =>
             {
                 if (obj is Object unityObj) Object.Destroy(unityObj);
             });
