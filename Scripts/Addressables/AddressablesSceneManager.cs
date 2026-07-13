@@ -5,8 +5,8 @@ namespace UniT.ResourceManagement.Addressables
     using System.Collections.Generic;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
-    using UniT.Logging;
+    using Extensions;
+    using Logging;
     using UnityEngine.AddressableAssets;
     using UnityEngine.ResourceManagement.ResourceProviders;
     using UnityEngine.SceneManagement;
@@ -34,7 +34,17 @@ namespace UniT.ResourceManagement.Addressables
             if (mode is LoadSceneMode.Single) this.loadedScenes.Clear();
             await this.loadedScenes.TryAddAsync(
                 name,
-                static state => Addressables.LoadSceneAsync(state.name, state.mode, state.activateOnLoad).ToUniTask(state.progress, state.cancellationToken),
+                static async state =>
+                {
+                    try
+                    {
+                        return await Addressables.LoadSceneAsync(state.name, state.mode, state.activateOnLoad).ToUniTask(state.progress, state.cancellationToken);
+                    }
+                    catch (InvalidKeyException)
+                    {
+                        throw new KeyNotFoundException($"{state.name} not found in Addressables");
+                    }
+                },
                 (name, mode, activateOnLoad, progress, cancellationToken)
             );
             this.logger.Debug($"Loaded {name}, mode: {mode}, activateOnLoad: {activateOnLoad}");

@@ -5,8 +5,8 @@ namespace UniT.ResourceManagement.Resources
     using System.Collections.Generic;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
-    using UniT.Logging;
+    using Extensions;
+    using Logging;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.Scripting;
@@ -36,7 +36,8 @@ namespace UniT.ResourceManagement.Resources
                 name,
                 async static state =>
                 {
-                    var asyncOperation = SceneManager.LoadSceneAsync(state.name, state.mode)!;
+                    var asyncOperation = SceneManager.LoadSceneAsync(state.name, state.mode)
+                        ?? throw new KeyNotFoundException($"{state.name} not found in Resources");
                     if (state.activateOnLoad)
                     {
                         await asyncOperation.ToUniTask(progress: state.progress, cancellationToken: state.cancellationToken);

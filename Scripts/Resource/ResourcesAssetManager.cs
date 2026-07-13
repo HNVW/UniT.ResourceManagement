@@ -6,8 +6,8 @@ namespace UniT.ResourceManagement.Resources
     using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
-    using UniT.Logging;
+    using Extensions;
+    using Logging;
     using UnityEngine;
     using UnityEngine.Scripting;
     using ILogger = Logging.ILogger;

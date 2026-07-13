@@ -6,7 +6,7 @@ namespace UniT.ResourceManagement
     using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
+    using Extensions;
     using Object = UnityEngine.Object;
 
     public interface IAssetManager

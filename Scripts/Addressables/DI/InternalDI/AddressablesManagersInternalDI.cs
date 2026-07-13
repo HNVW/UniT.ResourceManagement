@@ -1,7 +1,7 @@
 #nullable enable
 namespace UniT.ResourceManagement.Addressables.DI
 {
-    using UniT.DI;
+    using InternalDI;
 
     public static class AddressablesManagersInternalDI
     {

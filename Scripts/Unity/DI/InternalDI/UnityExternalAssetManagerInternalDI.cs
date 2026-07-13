@@ -1,7 +1,7 @@
 #nullable enable
 namespace UniT.ResourceManagement.Unity.DI
 {
-    using UniT.DI;
+    using InternalDI;
 
     public static class UnityExternalAssetManagerInternalDI
     {

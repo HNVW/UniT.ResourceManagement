@@ -7,8 +7,8 @@ namespace UniT.ResourceManagement.Addressables
     using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
-    using UniT.Extensions;
-    using UniT.Logging;
+    using Extensions;
+    using Logging;
     using UnityEngine.AddressableAssets;
     using UnityEngine.Scripting;
     using Object = UnityEngine.Object;

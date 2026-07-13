@@ -1,7 +1,7 @@
 #nullable enable
 namespace UniT.ResourceManagement.Resources.DI
 {
-    using UniT.DI;
+    using InternalDI;
 
     public static class ResourcesManagersInternalDI
     {
