@@ -1,5 +1,5 @@
 #nullable enable
-namespace UniT.ResourceManagement.Resources
+namespace UniT.ResourceManagement
 {
     using System;
     using System.Collections.Generic;

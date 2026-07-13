@@ -1,5 +1,5 @@
 #nullable enable
-namespace UniT.ResourceManagement.Addressables.DI
+namespace UniT.ResourceManagement.DI
 {
     using Zenject;
 

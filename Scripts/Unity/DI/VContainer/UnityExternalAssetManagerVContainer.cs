@@ -1,5 +1,5 @@
 #nullable enable
-namespace UniT.ResourceManagement.Unity.DI
+namespace UniT.ResourceManagement.DI
 {
     using VContainer;
 
