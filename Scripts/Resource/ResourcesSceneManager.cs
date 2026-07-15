@@ -34,7 +34,7 @@ namespace UniT.ResourceManagement
             if (mode is LoadSceneMode.Single) this.loadedScenes.Clear();
             await this.loadedScenes.TryAddAsync(
                 name,
-                async static state =>
+                static async state =>
                 {
                     var asyncOperation = SceneManager.LoadSceneAsync(state.name, state.mode)
                         ?? throw new KeyNotFoundException($"{state.name} not found in Resources");

@@ -33,8 +33,9 @@ namespace UniT.ResourceManagement
 
         async UniTask<string> IExternalAssetManager.DownloadTextAsync(string url, bool cache, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (!cache) return (string)await DownloadTextAsync();
-            return (string)await this.cache.GetOrAddAsync(url, DownloadTextAsync);
+            return cache
+                ? (string)await this.cache.GetOrAddAsync(url, DownloadTextAsync)
+                : (string)await DownloadTextAsync();
 
             async UniTask<object> DownloadTextAsync()
             {
@@ -46,8 +47,9 @@ namespace UniT.ResourceManagement
 
         async UniTask<byte[]> IExternalAssetManager.DownloadBufferAsync(string url, bool cache, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (!cache) return (byte[])await DownloadBufferAsync();
-            return (byte[])await this.cache.GetOrAddAsync(url, DownloadBufferAsync);
+            return cache
+                ? (byte[])await this.cache.GetOrAddAsync(url, DownloadBufferAsync)
+                : (byte[])await DownloadBufferAsync();
 
             async UniTask<object> DownloadBufferAsync()
             {
@@ -59,8 +61,9 @@ namespace UniT.ResourceManagement
 
         async UniTask<Texture2D> IExternalAssetManager.DownloadTextureAsync(string url, bool cache, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (!cache) return (Texture2D)await DownloadTextureAsync();
-            return (Texture2D)await this.cache.GetOrAddAsync(url, DownloadTextureAsync);
+            return cache
+                ? (Texture2D)await this.cache.GetOrAddAsync(url, DownloadTextureAsync)
+                : (Texture2D)await DownloadTextureAsync();
 
             async UniTask<object> DownloadTextureAsync()
             {
@@ -72,8 +75,9 @@ namespace UniT.ResourceManagement
 
         async UniTask<AudioClip> IExternalAssetManager.DownloadAudioClipAsync(string url, AudioType audioType, bool cache, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (!cache) return (AudioClip)await DownloadAudioClipAsync();
-            return (AudioClip)await this.cache.GetOrAddAsync(url, DownloadAudioClipAsync);
+            return cache
+                ? (AudioClip)await this.cache.GetOrAddAsync(url, DownloadAudioClipAsync)
+                : (AudioClip)await DownloadAudioClipAsync();
 
             async UniTask<object> DownloadAudioClipAsync()
             {
