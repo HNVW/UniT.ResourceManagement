@@ -4,7 +4,6 @@ namespace UniT.ResourceManagement
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using Extensions;
@@ -112,7 +111,6 @@ namespace UniT.ResourceManagement
             }, (@this: this, key, progress, cancellationToken));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object GetScopedKey(object key) => key is string ? $"{this.keyPrefix}{key}" : key;
 
         #endregion
@@ -148,7 +146,6 @@ namespace UniT.ResourceManagement
             this.logger.Debug("Disposed");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Unload(object asset)
         {
 #if UNITY_EDITOR

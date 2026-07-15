@@ -3,7 +3,6 @@ namespace UniT.ResourceManagement
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Threading;
     using Cysharp.Threading.Tasks;
     using Extensions;
@@ -69,7 +68,6 @@ namespace UniT.ResourceManagement
             }, (@this: this, key)));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string GetScopedKey(object key) => key is string
             ? $"{this.keyPrefix}{key}"
             : throw new NotSupportedException("Resources only supports loading assets from string paths");
@@ -108,7 +106,6 @@ namespace UniT.ResourceManagement
             this.logger.Debug("Disposed");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Unload(Object asset)
         {
             if (asset is GameObject) return;
