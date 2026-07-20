@@ -36,19 +36,20 @@ namespace UniT.ResourceManagement
                 name,
                 static async state =>
                 {
-                    var asyncOperation = SceneManager.LoadSceneAsync(state.name, state.mode)
-                        ?? throw new KeyNotFoundException($"{state.name} not found in Resources");
-                    if (state.activateOnLoad)
+                    var (name, mode, activateOnLoad, progress, cancellationToken) = state;
+                    var asyncOperation = SceneManager.LoadSceneAsync(name, mode)
+                        ?? throw new KeyNotFoundException($"{name} not found in Resources");
+                    if (activateOnLoad)
                     {
-                        await asyncOperation.ToUniTask(progress: state.progress, cancellationToken: state.cancellationToken);
+                        await asyncOperation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
                     }
                     else
                     {
                         asyncOperation.allowSceneActivation = false;
                         while (asyncOperation.progress < .9f)
                         {
-                            await UniTask.Yield(state.cancellationToken);
-                            state.progress?.Report(asyncOperation.progress * 10 / 9);
+                            await UniTask.Yield(cancellationToken);
+                            progress?.Report(asyncOperation.progress * 10 / 9);
                         }
                     }
                     return asyncOperation;

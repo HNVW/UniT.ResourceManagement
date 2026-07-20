@@ -36,13 +36,14 @@ namespace UniT.ResourceManagement
                 name,
                 static async state =>
                 {
+                    var (name, mode, activateOnLoad, progress, cancellationToken) = state;
                     try
                     {
-                        return await Addressables.LoadSceneAsync(state.name, state.mode, state.activateOnLoad).ToUniTask(state.progress, state.cancellationToken);
+                        return await Addressables.LoadSceneAsync(name, mode, activateOnLoad).ToUniTask(progress, cancellationToken);
                     }
                     catch (InvalidKeyException)
                     {
-                        throw new KeyNotFoundException($"{state.name} not found in Addressables");
+                        throw new KeyNotFoundException($"{name} not found in Addressables");
                     }
                 },
                 (name, mode, activateOnLoad, progress, cancellationToken)

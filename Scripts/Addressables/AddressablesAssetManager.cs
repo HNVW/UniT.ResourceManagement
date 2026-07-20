@@ -9,6 +9,7 @@ namespace UniT.ResourceManagement
     using Extensions;
     using Logging;
     using UnityEngine.AddressableAssets;
+    using UnityEngine.ResourceManagement.ResourceLocations;
     using UnityEngine.Scripting;
     using Object = UnityEngine.Object;
 #if UNITY_EDITOR
@@ -23,7 +24,7 @@ namespace UniT.ResourceManagement
         private readonly ILogger logger;
 
         private readonly Dictionary<object, Object> cacheSingle = new();
-        private readonly Dictionary<object, IReadOnlyCollection<Object>> cacheMultiple = new();
+        private readonly Dictionary<object, IReadOnlyList<Object>> cacheMultiple = new();
 
         [Preserve]
         public AddressablesAssetManager(ILoggerManager loggerManager, string? scope = null)
@@ -44,9 +45,8 @@ namespace UniT.ResourceManagement
 
         async UniTask<long> IRemoteAssetDownloader.GetAllDownloadSizeAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            var subProgresses = progress.CreateSubProgresses(2).ToArray();
-            var keys = await this.GetAllKeysAsync(subProgresses[0], cancellationToken);
-            return await Addressables.GetDownloadSizeAsync(keys).ToUniTask(subProgresses[1], cancellationToken);
+            var keys = await this.GetAllKeysAsync(cancellationToken);
+            return await Addressables.GetDownloadSizeAsync(keys).ToUniTask(progress, cancellationToken);
 
         }
 
@@ -57,14 +57,13 @@ namespace UniT.ResourceManagement
 
         async UniTask IRemoteAssetDownloader.DownloadAllAsync(IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            var subProgresses = progress.CreateSubProgresses(2).ToArray();
-            var keys = await this.GetAllKeysAsync(subProgresses[0], cancellationToken);
-            await Addressables.DownloadDependenciesAsync(keys, autoReleaseHandle: true).ToUniTask(subProgresses[1], cancellationToken);
+            var keys = await this.GetAllKeysAsync(cancellationToken);
+            await Addressables.DownloadDependenciesAsync(keys, autoReleaseHandle: true).ToUniTask(progress, cancellationToken);
         }
 
-        private async UniTask<IEnumerable<object>> GetAllKeysAsync(IProgress<float>? progress, CancellationToken cancellationToken)
+        private async UniTask<IEnumerable<object>> GetAllKeysAsync(CancellationToken cancellationToken)
         {
-            await Addressables.InitializeAsync(autoReleaseHandle: true).ToUniTask(progress, cancellationToken);
+            await Addressables.InitializeAsync(autoReleaseHandle: true).ToUniTask(cancellationToken: cancellationToken);
             return Addressables.ResourceLocators.SelectMany(static locator => locator.Keys);
         }
 
@@ -72,14 +71,19 @@ namespace UniT.ResourceManagement
 
         #region Load
 
-        async UniTask<bool> IAssetManager.ContainsAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        async UniTask<bool> IAssetManager.ContainsAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key)) return true;
-            var handle = Addressables.LoadResourceLocationsAsync(this.GetScopedKey(key), typeof(Object));
-            var resourceLocations = await handle.ToUniTask(progress, cancellationToken);
-            var contains = resourceLocations.Count > 0;
-            handle.Release();
-            return contains;
+            if (this.cacheSingle.ContainsKey(key)) return true;
+            var locations = await this.LoadResourceLocationsAsync<T>(key, cancellationToken);
+            if (locations.Count > 1) throw new InvalidOperationException($"Multiple assets found for {key} in Addressables");
+            return locations.Count > 0;
+        }
+
+        async UniTask<bool> IAssetManager.ContainsAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            if (this.cacheMultiple.ContainsKey(key)) return true;
+            var locations = await this.LoadResourceLocationsAsync<T>(key, cancellationToken);
+            return locations.Count > 0;
         }
 
         async UniTask<T> IAssetManager.LoadAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
@@ -87,28 +91,33 @@ namespace UniT.ResourceManagement
             return (T)await this.cacheSingle.GetOrAddAsync(key, static async state =>
             {
                 var (@this, key, progress, cancellationToken) = state;
-                try
-                {
-                    var asset = await Addressables.LoadAssetAsync<T>(@this.GetScopedKey(key)).ToUniTask(progress, cancellationToken);
-                    @this.logger.Debug($"Loaded {key}");
-                    return (Object)asset;
-                }
-                catch (InvalidKeyException)
-                {
-                    throw new KeyNotFoundException($"{key} not found in Addressables");
-                }
+                var locations = await @this.LoadResourceLocationsAsync<T>(key, cancellationToken);
+                if (locations.Count is 0) throw new KeyNotFoundException($"{key} not found in Addressables");
+                if (locations.Count > 1) throw new InvalidOperationException($"Multiple assets found for {key} in Addressables");
+                var asset = await Addressables.LoadAssetAsync<T>(locations[0]).ToUniTask(progress, cancellationToken);
+                @this.logger.Debug($"Loaded {key}");
+                return (Object)asset;
             }, (@this: this, key, progress, cancellationToken));
         }
 
-        async UniTask<IReadOnlyCollection<T>> IAssetManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        async UniTask<IReadOnlyList<T>> IAssetManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            return (IReadOnlyCollection<T>)await this.cacheMultiple.GetOrAddAsync(key, static async state =>
+            return (IReadOnlyList<T>)await this.cacheMultiple.GetOrAddAsync(key, static async state =>
             {
                 var (@this, key, progress, cancellationToken) = state;
-                var assets = await Addressables.LoadAssetsAsync<T>(@this.GetScopedKey(key), null).ToUniTask(progress, cancellationToken);
+                var locations = await @this.LoadResourceLocationsAsync<T>(key, cancellationToken);
+                var assets = await Addressables.LoadAssetsAsync<T>(locations, null).ToUniTask(progress, cancellationToken);
                 @this.logger.Debug($"Loaded {assets.Count} assets for {key}");
-                return (IReadOnlyCollection<Object>)assets;
+                return (IReadOnlyList<Object>)assets;
             }, (@this: this, key, progress, cancellationToken));
+        }
+
+        private async UniTask<IList<IResourceLocation>> LoadResourceLocationsAsync<T>(object key, CancellationToken cancellationToken) where T : Object
+        {
+            var handle = Addressables.LoadResourceLocationsAsync(this.GetScopedKey(key), typeof(T));
+            var result = await handle.ToUniTask(cancellationToken: cancellationToken);
+            handle.Release();
+            return result;
         }
 
         private object GetScopedKey(object key) => key is string ? $"{this.keyPrefix}{key}" : key;

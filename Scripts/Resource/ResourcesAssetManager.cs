@@ -20,7 +20,7 @@ namespace UniT.ResourceManagement
         private readonly ILogger logger;
 
         private readonly Dictionary<object, Object> cacheSingle = new();
-        private readonly Dictionary<object, IReadOnlyCollection<Object>> cacheMultiple = new();
+        private readonly Dictionary<object, IReadOnlyList<Object>> cacheMultiple = new();
 
         [Preserve]
         public ResourcesAssetManager(ILoggerManager loggerManager, string? scope = null)
@@ -34,14 +34,24 @@ namespace UniT.ResourceManagement
 
         #region Load
 
-        async UniTask<bool> IAssetManager.ContainsAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        async UniTask<bool> IAssetManager.ContainsAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
-            if (this.cacheSingle.ContainsKey(key) || this.cacheMultiple.ContainsKey(key)) return true;
-            this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` or `LoadAllAsync` directly.");
-            var asset = await Resources.LoadAsync<Object>(this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
+            if (this.cacheSingle.ContainsKey(key)) return true;
+            this.logger.Warning("Resources does not support checking key exists. Use `LoadAsync` directly.");
+            var asset = await Resources.LoadAsync<T>(this.GetScopedKey(key)).ToUniTask(progress: progress, cancellationToken: cancellationToken);
             if (!asset) return false;
-            Unload(asset);
+            this.cacheSingle.TryAdd(key, asset);
             return true;
+        }
+
+        UniTask<bool> IAssetManager.ContainsAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        {
+            if (this.cacheMultiple.ContainsKey(key)) return UniTask.FromResult(true);
+            this.logger.Warning("Resources does not support checking key exists. Use `LoadAllAsync` directly.");
+            this.logger.Warning("Resources does not support loading all asynchronously");
+            var assets = Resources.LoadAll<T>(this.GetScopedKey(key));
+            this.cacheMultiple.TryAdd(key, assets);
+            return UniTask.FromResult(assets.Length > 0);
         }
 
         async UniTask<T> IAssetManager.LoadAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
@@ -56,10 +66,10 @@ namespace UniT.ResourceManagement
             }, (@this: this, key, progress, cancellationToken));
         }
 
-        UniTask<IReadOnlyCollection<T>> IAssetManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
+        UniTask<IReadOnlyList<T>> IAssetManager.LoadAllAsync<T>(object key, IProgress<float>? progress, CancellationToken cancellationToken)
         {
             this.logger.Warning("Resources does not support loading all asynchronously");
-            return UniTask.FromResult((IReadOnlyCollection<T>)this.cacheMultiple.GetOrAdd(key, static state =>
+            return UniTask.FromResult((IReadOnlyList<T>)this.cacheMultiple.GetOrAdd(key, static state =>
             {
                 var (@this, key) = state;
                 var assets = Resources.LoadAll<T>(@this.GetScopedKey(key));
