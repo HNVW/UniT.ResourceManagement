@@ -55,7 +55,7 @@ namespace UniT.ResourceManagement
         {
             if (!this.loadedScenes.TryGetValue(name, out var sceneInstance))
             {
-                throw new InvalidOperationException($"Scene {name} not loaded");
+                throw new InvalidOperationException($"{name} not loaded");
             }
             await sceneInstance.ActivateAsync().ToUniTask(progress: progress, cancellationToken: cancellationToken);
             this.logger.Debug($"Activated {name}");

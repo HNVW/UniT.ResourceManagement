@@ -90,7 +90,7 @@ namespace UniT.ResourceManagement
         {
             if (!this.cacheSingle.Remove(key, out var asset))
             {
-                this.logger.Warning($"Trying to unload {key} that was not loaded");
+                this.logger.Warning($"{key} not loaded");
                 return;
             }
             Unload(asset);
@@ -101,7 +101,7 @@ namespace UniT.ResourceManagement
         {
             if (!this.cacheMultiple.Remove(key, out var assets))
             {
-                this.logger.Warning($"Trying to unload all {key} that was not loaded");
+                this.logger.Warning($"{key} not loaded");
                 return;
             }
             assets.ForEach(Unload);

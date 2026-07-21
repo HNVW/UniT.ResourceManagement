@@ -63,7 +63,7 @@ namespace UniT.ResourceManagement
         {
             if (!this.loadedScenes.Remove(name, out var asyncOperation))
             {
-                throw new InvalidOperationException($"Scene {name} not loaded");
+                throw new InvalidOperationException($"{name} not loaded");
             }
             asyncOperation.allowSceneActivation = true;
             await asyncOperation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
