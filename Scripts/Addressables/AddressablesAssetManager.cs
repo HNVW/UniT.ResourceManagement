@@ -47,7 +47,6 @@ namespace UniT.ResourceManagement
         {
             var keys = await this.GetAllKeysAsync(cancellationToken);
             return await Addressables.GetDownloadSizeAsync(keys).ToUniTask(progress, cancellationToken);
-
         }
 
         UniTask IRemoteAssetDownloader.DownloadAsync(object key, IProgress<float>? progress, CancellationToken cancellationToken)
